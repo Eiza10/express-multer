@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        cb(null, 'avatar' + '-' + uniqueSuffix + path.extname(file.originalname))
     }
   })
 
@@ -38,8 +38,21 @@ const upload = multer({
 
 router.post('/', upload.single('avatar'), function (req, res, next) {
     console.log(req.file)
-    // req.body will hold the text fields, if there were any
-    res.send("Jasota")
+    let izena = req.body.izena
+    // Dynamically get the host URL
+    let host;
+    if (process.env.CODESPACE_NAME) {
+        // Construct the URL for Codespace
+        host = `${process.env.CODESPACE_NAME}-3000.app.github.dev`;
+    } else {
+        // Fallback to local host
+        host = req.get('host');
+    }
+    const protocol = req.protocol;
+    // Construct the file path
+    const filename = req.file.filename;
+    const filePath = `${protocol}://${host}/uploads/${filename}`;
+    res.send(`Zure izena: ${izena}. Fitxategia: <a href="${filePath}">${filePath}</a>`);
 })
 
 module.exports = router;
